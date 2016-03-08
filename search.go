@@ -2,8 +2,9 @@ package foursquare
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
+	"time"
 )
 
 type SearchReq struct {
@@ -55,20 +56,21 @@ func (api *Api) Search(req *SearchReq) (*FSResp, error) {
 	}
 
 	url := SEARCHURL + params.Encode()
-	fmt.Println(url)
-	r, e := http.Get(url)
-	defer r.Body.Close()
+	log.Println(url)
 
+	http.DefaultClient.Timeout = 5 * time.Second // 超时 5s
+	r, e := http.Get(url)
 	if e != nil {
-		fmt.Println(e)
+		log.Println(e)
 		return nil, e
 	}
+	defer r.Body.Close()
 
 	// result
 	resp := &FSResp{}
 	dec := json.NewDecoder(r.Body)
 	if e := dec.Decode(resp); e != nil {
-		fmt.Println(e)
+		log.Println(e)
 		return nil, e
 	}
 
